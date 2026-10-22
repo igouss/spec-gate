@@ -37,6 +37,12 @@ The product repository holds no gate configuration that counts. Its own CI may r
 pre-check for the agent; the only verdict that gates a merge is the commit status posted by the
 spec-side runner, with a credential the agent never holds.
 
+The repositories are on GitHub. Product and spec repositories are public; the holdout
+repository is private and readable only by the runner. The runner posts statuses as a GitHub
+App and polls instead of receiving webhooks. Branch protection requires its status, pinned to
+the App, with bypassing disallowed for everyone. Agents use a separate collaborator account with
+Write access and no Administration or Statuses permission.
+
 ## 3. The spec workspace — four layers
 
 ```
@@ -106,6 +112,15 @@ Each scenario carries `@covers:<criterion-id>` and an `@id:<scenario-id>` minted
 Gherkin tags; `spec-gate` v0 has no binding stage (D-24). Zero scenarios fails the run
 (`sg-zf8.2`).
 
+A scenario counts once the ledger holds a red before its first green. A scenario whose first
+recorded result is a pass stays rejected under its id; the way out is a new id, seen red.
+
+Evidence follows meaning, not the id. A change to a scenario's steps, or to the step
+definitions, DSL or driver code it executes, voids its evidence; a change to its title or tags
+does not. The judge renews voided evidence by re-running the scenario against its first-red
+product commit: still red there, the evidence stands; green there, the scenario no longer
+discriminates and the gate fails it, naming it.
+
 ## 5. The three loops
 
 **Author (operator).** Write a requirement and a scenario; record the scenario red against the
@@ -130,12 +145,12 @@ configuration that decides a verdict lives in the spec repository.
 | acceptance | `cucumber` harness in `crates/acceptance` | `fail_on_skipped`, suite path |
 | red-first | `spec-gate` ledger | `ledger/` |
 | binding | `req check`, then `binding-contract` | `requirements.toon` |
-| holdout | `spec-gate` | `holdout/`, absent from every agent checkout |
+| holdout | `spec-gate` | a private repository only the runner reads |
 | structure | `hex-lint` on the product | expected role map and exceptions file held in the spec repository |
 | purity | `effect-audit` | expected kernel/domain crate set |
 | API and wire | `cargo-regime-check`, `contract-suite` | baselines |
 | spec holes | `cargo-mutants` + `mutation-triage`, rebuilding and restarting the product per mutant | packages, equivalence ledger |
-| properties, model | `hegeltest`, `proptest-state-machine`, `quint-connect` in `crates/model` | — |
+| properties, model | `hegeltest`, including its stateful `StateMachine`, in `crates/model` | — |
 
 A product's `Cargo.toml` role tags are agent-editable; the structure stage compares them against
 the spec-side role map and fails on any difference.
@@ -274,7 +289,6 @@ these two repositories.
 - `cucumber` reports an undefined step as skipped; `fail_on_skipped` is required and must be seen
   failing once on a deliberately undefined step.
 - Holdout sets as practised by StrongDM are known to this design second-hand only.
-- Whether `hegeltest` supports stateful testing is unchecked.
 - The seed scenarios carry no `@id` tags: `spec-gate mint` (D-20) does not exist yet, and ids are
   never written by hand.
 - `[judge] sha256` in `spec-gate-specs/spec-gate.toml` is `PENDING` until `v0` is built and
