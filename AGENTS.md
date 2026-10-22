@@ -54,9 +54,8 @@ time in `br ready` order.
 
 1. The workspace gate command passes.
 2. The bead's scenarios pass when `../spec-gate-specs`'s harness runs against your build.
-3. `cargo mutants` on the changed code; survivors triaged with `mutants-triage` from
-   `~/code/tools/mutation-triage`, which is not on PATH: install it per that README's Install
-   section (cm-1qk).
+3. `cargo mutants` on the changed code; survivors triaged with `mutants-triage` (on PATH, built
+   from `~/code/tools/mutation-triage`) (cm-1qk).
 
 Every cargo call gets a 900000 ms timeout (cm-lpb). Only one agent on this machine runs cargo
 at a time (cm-e51).
