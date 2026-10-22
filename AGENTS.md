@@ -26,10 +26,12 @@ Beads live in `.beads/` (`br`). Your beads are labelled `side:product`. Work the
 time in `br ready` order.
 
 1. `br show <id>`; confirm the status is `open` before claiming (cm-2tb); `br update <id> --claim`.
-2. Work on a branch named `<id>`. The operator merges.
-3. Close only when every acceptance criterion is proven (cm-nvh). Otherwise leave it
-   `in_progress` with the outstanding half in the notes. Record any SHA the bead asks for in the
-   close note.
+2. Work on a branch named `<id>`. Never commit to `main`; the operator merges with `--no-ff` or a
+   fast-forward, never a squash.
+3. When every acceptance criterion is proven (cm-nvh), leave the bead `in_progress` with a note:
+   the branch, its tip, the evidence, any SHA the bead asks for, and that it awaits the operator
+   merge. It closes after the merge, with the merge commit in the close reason. If a criterion is
+   unproven, label the bead `unproven` and record the outstanding half in the notes.
 4. A policy choice not covered by §10 or the epic's Operator decision: stop and ask (cm-vph).
 
 ## Code
